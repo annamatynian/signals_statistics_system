@@ -8,8 +8,8 @@ from typing import List, Dict, Any
 from pathlib import Path
 import uuid
 
-from models.signal import SignalTarget
-from storage.base import StorageBase
+from ..models.signal import SignalTarget
+from .base import StorageBase
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,12 @@ class JSONStorage(StorageBase):
         if not self.file_path.exists():
             self.file_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.file_path, 'w', encoding='utf-8') as f:
-                json.dump({"signals": [], "users": {}}, f, indent=4)
+                json.dump({
+                    "signals": [],
+                    "channels": [],
+                    "statistics": {},
+                    "users": {}  # kept for backward compatibility
+                }, f, indent=4)
             logger.info(f"Created empty storage file at {self.file_path}")
 
     def _read_data(self) -> Dict[str, Any]:
@@ -96,12 +101,72 @@ class JSONStorage(StorageBase):
         data = self._read_data()
         if "users" not in data:
             data["users"] = {}
-        
+
         user_data = data["users"].get(user_id, {})
         user_data["chat_id"] = chat_id
         if pushover_key:
             user_data["pushover_key"] = pushover_key
-        
+
         data["users"][user_id] = user_data
         self._write_data(data)
         logger.info(f"Saved data for user {user_id}")
+
+    # --- Методы для работы с каналами ---
+    async def load_channels(self) -> List[Dict[str, Any]]:
+        """Load all channels"""
+        data = self._read_data()
+        return data.get("channels", [])
+
+    async def save_channel(self, channel: Dict[str, Any]) -> bool:
+        """Save single channel"""
+        data = self._read_data()
+        if "channels" not in data:
+            data["channels"] = []
+
+        # Check if channel already exists
+        existing_channel = await self.get_channel_by_name(channel.get("name"))
+        if existing_channel:
+            logger.warning(f"Channel '{channel.get('name')}' already exists")
+            return False
+
+        data["channels"].append(channel)
+        self._write_data(data)
+        logger.info(f"Saved new channel: {channel.get('name')}")
+        return True
+
+    async def get_channel_by_name(self, name: str) -> Dict[str, Any] | None:
+        """Get channel by name"""
+        data = self._read_data()
+        for channel in data.get("channels", []):
+            if channel.get("name") == name:
+                return channel
+        return None
+
+    async def get_signals_by_channel(self, channel_name: str) -> List[SignalTarget]:
+        """Get all signals for a specific channel"""
+        data = self._read_data()
+        signals = []
+        for signal_data in data.get("signals", []):
+            if signal_data.get("channel_name") == channel_name:
+                signals.append(SignalTarget.parse_obj(signal_data))
+        return signals
+
+    # --- Методы для работы со статистикой ---
+    async def load_statistics(self) -> Dict[str, Any]:
+        """Load all statistics"""
+        data = self._read_data()
+        return data.get("statistics", {})
+
+    async def save_statistics(self, stats: Dict[str, Any]) -> bool:
+        """Save statistics"""
+        data = self._read_data()
+        data["statistics"] = stats
+        self._write_data(data)
+        logger.info("Saved statistics")
+        return True
+
+    async def get_channel_statistics(self, channel_name: str) -> Dict[str, Any] | None:
+        """Get statistics for a specific channel"""
+        data = self._read_data()
+        stats = data.get("statistics", {})
+        return stats.get(channel_name, None)
