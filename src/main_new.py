@@ -13,19 +13,26 @@ SRC_ROOT = os.path.join(PROJECT_ROOT, 'src')
 if SRC_ROOT not in sys.path:
     sys.path.insert(0, SRC_ROOT)
 
+# Initialize logger early
+logger = logging.getLogger(__name__)
+
 from src.storage.json_storage import JSONStorage
 from src.services.price_checker import PriceChecker
 from src.services.signal_manager import SignalManager
 from src.services.stats_calculator import StatsCalculator
 from src.models.signal import ExchangeType
 from src.exchanges.binance import BinanceExchange
-from src.exchanges.bybit import BybitExchange
+# Bybit optional - requires pybit library
+try:
+    from src.exchanges.bybit import BybitExchange
+    BYBIT_AVAILABLE = True
+except ImportError:
+    BYBIT_AVAILABLE = False
+    print("⚠️ Bybit not available (pybit not installed)")  # use print before logger setup
 from src.exchanges.coinbase import CoinbaseExchange
 from src.ui.gradio_interface import SignalStatisticsUI
 from src.utils.logger import setup_logging
 from src.utils.config import load_config
-
-logger = logging.getLogger(__name__)
 
 
 async def check_signals_background(signal_manager: SignalManager, check_interval: int = 60):
@@ -71,8 +78,8 @@ async def initialize_exchanges(config) -> dict:
         except Exception as e:
             logger.warning(f"⚠️ Failed to initialize Binance: {e}")
 
-    # Bybit
-    if ExchangeType.BYBIT in config.exchanges:
+    # Bybit (optional - requires pybit)
+    if BYBIT_AVAILABLE and ExchangeType.BYBIT in config.exchanges:
         try:
             bybit_config = config.get_exchange_config(ExchangeType.BYBIT)
             bybit = BybitExchange(
@@ -84,6 +91,8 @@ async def initialize_exchanges(config) -> dict:
             logger.info("✅ Bybit exchange initialized")
         except Exception as e:
             logger.warning(f"⚠️ Failed to initialize Bybit: {e}")
+    elif not BYBIT_AVAILABLE and ExchangeType.BYBIT in config.exchanges:
+        logger.warning("⚠️ Bybit requested but pybit not installed - skipping")
 
     # Coinbase
     if ExchangeType.COINBASE in config.exchanges:
