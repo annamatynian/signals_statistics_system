@@ -49,14 +49,6 @@ class TakeProfitTarget(BaseModel):
     amount_closed: Optional[float] = Field(None, ge=0, description="Amount closed at this TP (USD/USDT)")
 
 
-class TakeProfitTarget(BaseModel):
-    """Single take profit target in a ladder"""
-    price: float = Field(..., gt=0, description="TP price level")
-    percentage: float = Field(..., gt=0, le=100, description="% of position to close at this TP")
-    closed_at: Optional[datetime] = Field(None, description="When this TP was hit")
-    amount_closed: Optional[float] = Field(None, ge=0, description="Amount closed at this TP (USD/USDT)")
-
-
 class SignalTarget(BaseModel):
     """Configuration for a price signal"""
     id: Optional[str] = Field(None, description="Unique signal identifier")
@@ -99,15 +91,6 @@ class SignalTarget(BaseModel):
     user_id: Optional[str] = Field(None, description="User identifier")
     notes: Optional[str] = Field(None, max_length=500, description="User notes")
 
-    # Position tracking
-    position_open_date: Optional[datetime] = Field(None, description="Position open timestamp")
-    position_entry_amount: Optional[float] = Field(None, gt=0, description="Entry amount (USD/USDT)")
-    position_close_date: Optional[datetime] = Field(None, description="Position final close timestamp")
-
-    # Take profit ladder
-    take_profit_targets: list[TakeProfitTarget] = Field(default_factory=list, description="TP ladder (tp1, tp2, tp3...)")
-    stop_loss: Optional[float] = Field(None, gt=0, description="Stop loss price")
-    
     @validator('symbol')
     def validate_symbol(cls, v):
         """Validate trading pair symbol format"""
