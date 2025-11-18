@@ -746,10 +746,10 @@ def create_interface():
 
                     with gr.Column():
                         signal_condition = gr.Dropdown(
-                            choices=["above", "below", "equal", "percent_change"],
+                            choices=["above", "below", "equal"],
                             label="Condition",
                             value="above",
-                            info="Trigger condition: above (>), below (<), equal (=), or percent_change (%)"
+                            info="Trigger condition: above (>), below (<), equal (=)"
                         )
 
                         signal_target_price = gr.Number(
