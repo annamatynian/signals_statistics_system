@@ -152,10 +152,14 @@ async def test_save_user_data(storage):
 
 
 @pytest.mark.asyncio
-async def test_get_user_data(storage):
+async def test_get_user_data(storage, caplog):
     """Тест: получение данных пользователя"""
     import asyncio
     import boto3
+    import logging
+
+    # Включаем DEBUG логирование
+    caplog.set_level(logging.DEBUG, logger='storage.dynamodb_storage')
 
     user_data = {
         'pushover_key': 'test-key-123',
@@ -177,11 +181,17 @@ async def test_get_user_data(storage):
     print(f"Direct DynamoDB response: {response}")
 
     # Загружаем через метод storage
+    print("Calling storage.get_user_data...")
     loaded_data = await storage.get_user_data('test-user')
 
     # Отладка: выведем что получили
     print(f"Loaded data: {loaded_data}")
     print(f"Keys in loaded_data: {list(loaded_data.keys())}")
+
+    # Выводим все логи
+    print(f"Logs captured:")
+    for record in caplog.records:
+        print(f"  {record.levelname}: {record.message}")
 
     assert loaded_data, f"loaded_data should not be empty. Direct response: {response}"
     assert 'pushover_key' in loaded_data, f"pushover_key not in loaded_data. Got: {loaded_data}"

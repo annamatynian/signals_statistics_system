@@ -235,10 +235,10 @@ class DynamoDBStorage(StorageBase):
     async def get_user_data(self, user_id: str) -> Dict[str, Any]:
         """
         Получает данные пользователя по ID (TRUE ASYNC)
-        
+
         Args:
             user_id: ID пользователя
-            
+
         Returns:
             Словарь с данными пользователя
         """
@@ -251,18 +251,24 @@ class DynamoDBStorage(StorageBase):
                     'SK': 'metadata'
                 }
             )
-            
+
+            logger.debug(f"get_user_data response for {user_id}: {response}")
+
             item = response.get('Item', {})
             if not item:
-                logger.debug(f"User {user_id} not found")
+                logger.debug(f"User {user_id} not found in response")
                 return {}
-            
+
             # Убираем служебные поля
             user_data = {k: v for k, v in item.items() if k not in ['PK', 'SK', 'entity_type']}
+            logger.debug(f"Returning user_data for {user_id}: {user_data}")
             return user_data
-            
+
         except ClientError as e:
             logger.error(f"Failed to get user data for {user_id}: {e}")
+            return {}
+        except Exception as e:
+            logger.error(f"Unexpected error getting user data for {user_id}: {type(e).__name__}: {e}")
             return {}
     
     async def save_user_data(self, user_id: str, data: Dict[str, Any]) -> bool:
