@@ -46,7 +46,7 @@ class TakeProfitTarget(BaseModel):
     price: float = Field(..., gt=0, description="TP price level")
     percentage: float = Field(..., gt=0, le=100, description="% of position to close at this TP")
     closed_at: Optional[datetime] = Field(None, description="When this TP was hit")
-    amount_closed: Optional[float] = Field(None, ge=0, description="Amount closed at this TP (USD/USDT)")
+    amount_closed: Optional[float] = Field(None, ge=0, description="USD amount closed at this TP")
 
 
 class SignalTarget(BaseModel):
@@ -85,7 +85,7 @@ class SignalTarget(BaseModel):
 
     # Position tracking (NEW)
     position_open_date: Optional[datetime] = Field(None, description="Position open timestamp")
-    position_entry_amount: Optional[float] = Field(None, gt=0, description="Entry amount (USD/USDT)")
+    position_entry_price: Optional[float] = Field(None, gt=0, description="Entry price (asset price at position open)")
 
     # User context
     user_id: Optional[str] = Field(None, description="User identifier")
