@@ -31,6 +31,22 @@ class SignalStatus(str, Enum):
     TRIGGERED = "triggered"
     PAUSED = "paused"
     EXPIRED = "expired"
+    CLOSED = "closed"  # Signal closed (win or loss)
+
+
+class SignalOutcome(str, Enum):
+    """Signal final outcome"""
+    WIN = "win"
+    LOSS = "loss"
+    PENDING = "pending"
+
+
+class TakeProfitTarget(BaseModel):
+    """Single take profit target in a ladder"""
+    price: float = Field(..., gt=0, description="TP price level")
+    percentage: float = Field(..., gt=0, le=100, description="% of position to close at this TP")
+    closed_at: Optional[datetime] = Field(None, description="When this TP was hit")
+    amount_closed: Optional[float] = Field(None, ge=0, description="Amount closed at this TP (USD/USDT)")
 
 
 class TakeProfitTarget(BaseModel):
@@ -49,18 +65,36 @@ class SignalTarget(BaseModel):
     symbol: str = Field(..., pattern=r'^[A-Z]{5,15}$', description="Trading pair symbol")
     target_price: float = Field(..., gt=0, description="Target price")
     condition: SignalCondition = Field(..., description="Trigger condition")
-    
+
+    # Statistics tracking fields (NEW)
+    channel_name: str = Field(..., description="Telegram channel name")
+
+    # Take profit can be single level or ladder (tp1, tp2, tp3...)
+    take_profit: Optional[float] = Field(None, gt=0, description="Single take profit price level (deprecated, use take_profit_targets)")
+    take_profit_targets: list[TakeProfitTarget] = Field(default_factory=list, description="TP ladder (tp1, tp2, tp3...)")
+
+    stop_loss: Optional[float] = Field(None, gt=0, description="Stop loss price level")
+
     # Optional fields
     percentage_threshold: Optional[float] = Field(None, gt=0, le=100, description="For percent_change condition")
     active: bool = Field(True, description="Whether signal is active")
     max_triggers: Optional[int] = Field(None, gt=0, description="Maximum number of triggers")
-    
+
     # Metadata
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     triggered_count: int = Field(0, ge=0)
     last_triggered_at: Optional[datetime] = None
-    
+
+    # Signal outcome tracking (NEW)
+    status: SignalStatus = Field(SignalStatus.ACTIVE, description="Current signal status")
+    outcome: SignalOutcome = Field(SignalOutcome.PENDING, description="Final outcome (win/loss)")
+    closed_at: Optional[datetime] = Field(None, description="When signal was closed")
+
+    # Position tracking (NEW)
+    position_open_date: Optional[datetime] = Field(None, description="Position open timestamp")
+    position_entry_amount: Optional[float] = Field(None, gt=0, description="Entry amount (USD/USDT)")
+
     # User context
     user_id: Optional[str] = Field(None, description="User identifier")
     notes: Optional[str] = Field(None, max_length=500, description="User notes")

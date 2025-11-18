@@ -1,0 +1,11 @@
+name,channel_name,symbol,exchange,target_price,take_profit,stop_loss,condition,active
+BTC Long #1,VIP Crypto Signals,BTCUSDT,binance,90000,100000,85000,above,TRUE
+ETH Breakout,VIP Crypto Signals,ETHUSDT,binance,3500,3800,3200,above,TRUE
+BNB Quick Trade,Budget Trading Channel,BNBUSDT,binance,620,650,580,above,TRUE
+SOL Long Setup,Pro Traders Hub,SOLUSDT,binance,200,250,180,above,TRUE
+AVAX Position,Pro Traders Hub,AVAXUSDT,binance,100,120,85,above,TRUE
+DOT Signal,VIP Crypto Signals,DOTUSDT,binance,38,42,35,above,TRUE
+LINK Trade,Budget Trading Channel,LINKUSDT,binance,23,27,20,above,TRUE
+MATIC Setup,Pro Traders Hub,MATICUSDT,binance,1.8,2.2,1.5,above,TRUE
+ADA Long,VIP Crypto Signals,ADAUSDT,binance,1.2,1.5,1.0,above,TRUE
+XRP Position,Budget Trading Channel,XRPUSDT,binance,0.9,1.1,0.8,above,TRUE
