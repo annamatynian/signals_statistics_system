@@ -10,13 +10,13 @@ aiohttp-socks>=0.8.0
 
 # Exchange APIs
 ccxt>=4.0.0
-pybit>=5.0.0
+# pybit>=5.0.0  # Optional: Only needed for Bybit exchange support
 
 # AWS 
 boto3>=1.34.0
 botocore
 
-# Google Sheets
+# Google Sheets (Optional: Only needed for sheets import)
 google-api-python-client>=2.0.0
 google-auth>=2.0.0
 google-auth-httplib2
