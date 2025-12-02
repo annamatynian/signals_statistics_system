@@ -27,3 +27,8 @@ aws_credentials*.json
 *secret*.txt
 *password*.txt
 config/credentials*
+
+# Data and logs (generated at runtime)
+data/
+*.log
+nohup.out

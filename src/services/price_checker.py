@@ -2,8 +2,8 @@
 import logging
 import asyncio
 from typing import List, Optional
-from models.price import PriceData
-from models.signal import ExchangeType
+from ..models.price import PriceData
+from ..models.signal import ExchangeType
 
 logger = logging.getLogger(__name__)
 
